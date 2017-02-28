@@ -2,9 +2,10 @@
 <html lang="en">
 
 <head>
-    <title>Categoriser Tool</title>
+    <title>Comment Sentiment Tool</title>
     <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="http://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
 
 <body>
@@ -12,12 +13,34 @@
 
 <div class="container">
     <div class="jumbotron">
-        <p>Comment Text</p>
+        <p>{{ comment.text }}</p>
     </div>
     <div class="row">
-        <div class="col col-sm-4"><button type="button" class="btn btn-block btn-success btn-lg">Positive</button></div>
-        <div class="col col-sm-4"><button type="button" class="btn btn-block btn-danger btn-lg">Negative</button></div>
-        <div class="col col-sm-4"><button type="button" class="btn btn-block btn-info btn-lg">Spam</button></div>
+        <form action="{{ url_for('save') }}" method="POST">
+            <input type="hidden" name="id" value="{{ comment.id }}">
+            <input type="hidden" name="text" value="{{ comment.text }}">
+
+            <div class="col col-sm-3">
+                <button class="btn btn-block btn-success btn-lg" name="sentiment" type="submit"
+                        value="1">Positive
+                </button>
+            </div>
+            <div class="col col-sm-3">
+                <button class="btn btn-block btn-warning btn-lg" name="sentiment" type="submit"
+                        value="0">Neutral
+                </button>
+            </div>
+            <div class="col col-sm-3">
+                <button class="btn btn-block btn-danger btn-lg" name="sentiment" type="submit"
+                        value="-1">Negative
+                </button>
+            </div>
+            <div class="col col-sm-3">
+                <button class="btn btn-block btn-info btn-lg" name="sentiment" type="submit"
+                        value="spam">Spam
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
