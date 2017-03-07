@@ -48,8 +48,8 @@ def save():
     mariadb_connection = get_db_connection()
     cursor = mariadb_connection.cursor(buffered=True)
     if request.form['sentiment'] == 'spam':
-        stmt = "UPDATE comment_sentiment.comments_07_03 SET spam = 1 WHERE id = %s"
-        cursor.execute(stmt, (request.form['id']))
+        stmt = "UPDATE comment_sentiment.comments_07_03 SET spam = %s WHERE id = %s"
+        cursor.execute(stmt, ("1", request.form['id']))
     else:
         stmt = "UPDATE comment_sentiment.comments_07_03 SET sentiment = %s WHERE id = %s"
         cursor.execute(stmt, (request.form['sentiment'], request.form['id']))
