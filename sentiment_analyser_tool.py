@@ -14,7 +14,7 @@ app = Flask(__name__)
 def main():
     mariadb_connection = get_db_connection()
     cursor = mariadb_connection.cursor(buffered=True)
-    cursor.execute('SELECT id FROM comment_sentiment.comments WHERE sentiment IS NULL')
+    cursor.execute('SELECT id FROM comment_sentiment.comments_07_03 WHERE sentiment IS NULL')
     rows = cursor.fetchall()
     mariadb_connection.close()
     if cursor.rowcount == 0:
@@ -32,7 +32,7 @@ def getcomment(commentid):
     # get post info from the database
     cursor = mariadb_connection.cursor(buffered=True)
     cursor.execute(
-        'SELECT comment_text FROM comment_sentiment.comments WHERE id = "' + str(commentid) + '"')
+        'SELECT comment_text FROM comment_sentiment.comments_07_03 WHERE id = "' + str(commentid) + '"')
     if cursor.rowcount == 0 or cursor.rowcount > 1:
         raise ValueError
 
@@ -51,17 +51,15 @@ def save():
     mariadb_connection = get_db_connection()
     cursor = mariadb_connection.cursor(buffered=True)
     if request.form['sentiment'] == 'spam':
-        stmt = 'UPDATE comment_sentiment.comments SET spam = 1 WHERE id = "' + request.form['id'] + '"'
-        cursor.execute(stmt)
+        stmt = 'UPDATE comment_sentiment.comments_07_03 SET spam = 1 WHERE id = %s'
+        cursor.execute(stmt, request.form['id'])
     else:
-        stmt = 'UPDATE comment_sentiment.comments SET sentiment = ' + request.form['sentiment'] + ' WHERE id = "' + \
-               request.form['id'] + '"'
+        stmt = 'UPDATE comment_sentiment.comments_07_03 SET sentiment = %s WHERE id = %s'
         print stmt
-        cursor.execute(stmt)
+        cursor.execute(stmt, request.form['sentiment'], request.form['id'])
 
-    stmt2 = 'UPDATE comment_sentiment.comments SET comment_text = "' + request.form['text'] + '" WHERE id = "' + \
-            request.form['id'] + '"'
-    cursor.execute(stmt2)
+    stmt2 = "UPDATE comment_sentiment.comments_07_03 SET comment_text = %s WHERE id = %s"
+    cursor.execute(stmt2, request.form['text'], request.form['id'])
     mariadb_connection.commit()
     mariadb_connection.close()
     return main()
