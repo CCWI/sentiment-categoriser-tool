@@ -37,9 +37,6 @@ def getcomment(commentid):
         raise ValueError
 
     text = cursor.fetchall()[0][0]
-    # do some padding to the punctuation elements
-    text = re.sub('([.,!?():])', r' \1 ', text)
-    text = re.sub('\s{2,}', ' ', text)
     comment = {'text': text, 'id': commentid}
     mariadb_connection.close()
 
@@ -51,15 +48,12 @@ def save():
     mariadb_connection = get_db_connection()
     cursor = mariadb_connection.cursor(buffered=True)
     if request.form['sentiment'] == 'spam':
-        stmt = 'UPDATE comment_sentiment.comments_07_03 SET spam = 1 WHERE id = %s'
-        cursor.execute(stmt, request.form['id'])
+        stmt = "UPDATE comment_sentiment.comments_07_03 SET spam = 1 WHERE id = %s"
+        cursor.execute(stmt, (request.form['id']))
     else:
-        stmt = 'UPDATE comment_sentiment.comments_07_03 SET sentiment = %s WHERE id = %s'
-        print stmt
-        cursor.execute(stmt, request.form['sentiment'], request.form['id'])
+        stmt = "UPDATE comment_sentiment.comments_07_03 SET sentiment = %s WHERE id = %s"
+        cursor.execute(stmt, (request.form['sentiment'], request.form['id']))
 
-    stmt2 = "UPDATE comment_sentiment.comments_07_03 SET comment_text = %s WHERE id = %s"
-    cursor.execute(stmt2, request.form['text'], request.form['id'])
     mariadb_connection.commit()
     mariadb_connection.close()
     return main()
