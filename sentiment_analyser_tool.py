@@ -5,7 +5,6 @@ from flask import Flask, render_template, redirect, url_for, request
 import mysql.connector as mariadb
 
 from config import db_host, db_user, db_password, db_name
-from config import db_port
 
 app = Flask(__name__)
 
@@ -14,7 +13,7 @@ app = Flask(__name__)
 def main():
     mariadb_connection = get_db_connection()
     cursor = mariadb_connection.cursor(buffered=True)
-    cursor.execute('SELECT id FROM comment_sentiment.comments_07_03 WHERE sentiment IS NULL')
+    cursor.execute('SELECT id FROM comments_07_03 WHERE sentiment IS NULL')
     rows = cursor.fetchall()
     mariadb_connection.close()
     if cursor.rowcount == 0:
@@ -32,7 +31,7 @@ def getcomment(commentid):
     # get post info from the database
     cursor = mariadb_connection.cursor(buffered=True)
     cursor.execute(
-        'SELECT comment_text FROM comment_sentiment.comments_07_03 WHERE id = "' + str(commentid) + '"')
+        'SELECT comment_text FROM comments_07_03 WHERE id = "' + str(commentid) + '"')
     if cursor.rowcount == 0 or cursor.rowcount > 1:
         raise ValueError
 
@@ -48,10 +47,10 @@ def save():
     mariadb_connection = get_db_connection()
     cursor = mariadb_connection.cursor(buffered=True)
     if request.form['sentiment'] == 'spam':
-        stmt = "UPDATE comment_sentiment.comments_07_03 SET spam = %s WHERE id = %s"
+        stmt = "UPDATE comments_07_03 SET spam = %s WHERE id = %s"
         cursor.execute(stmt, ("1", request.form['id']))
     else:
-        stmt = "UPDATE comment_sentiment.comments_07_03 SET sentiment = %s WHERE id = %s"
+        stmt = "UPDATE comments_07_03 SET sentiment = %s WHERE id = %s"
         cursor.execute(stmt, (request.form['sentiment'], request.form['id']))
 
     mariadb_connection.commit()
@@ -60,7 +59,7 @@ def save():
 
 
 def get_db_connection():
-    return mariadb.connect(host=db_host, port=db_port, user=db_user, password=db_password,
+    return mariadb.connect(host=db_host, user=db_user, password=db_password,
                            database=db_name)
 
 
