@@ -18,16 +18,19 @@ def get_pw(username):
 
 @app.route('/')
 def main():
-    mariadb_connection = get_db_connection()
-    cursor = mariadb_connection.cursor(buffered=True)
-    cursor.execute('SELECT id FROM comments_07_03 WHERE sentiment IS NULL')
-    rows = cursor.fetchall()
-    mariadb_connection.close()
-    if cursor.rowcount == 0:
-        return render_template('alldone.html')
-    else:
-        commentid = random.choice(rows)[0]
-        return redirect(url_for('getcomment', commentid=commentid))
+    try:
+        mariadb_connection = get_db_connection()
+        cursor = mariadb_connection.cursor(buffered=True)
+        cursor.execute('SELECT id FROM comments_07_03 WHERE sentiment IS NULL ORDER BY RAND() LIMIT 1')
+        rows = cursor.fetchall()
+        if cursor.rowcount == 0:
+            return render_template('alldone.html')
+        else:
+            # commentid = random.choice(rows)[0]
+            commentid = rows[0][0]
+            return redirect(url_for('getcomment', commentid=commentid))
+    finally:
+        mariadb_connection.close()
 
 
 @app.route('/comments/<commentid>')
