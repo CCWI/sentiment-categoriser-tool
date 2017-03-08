@@ -2,12 +2,19 @@ import os
 import random
 import re
 from flask import Flask, render_template, redirect, url_for, request
+from flask_httpauth import HTTPBasicAuth
 import mysql.connector as mariadb
 
-from config import db_host, db_user, db_password, db_name
+from config import db_host, db_user, db_password, db_name, users
 
 app = Flask(__name__)
+auth = HTTPBasicAuth()
 
+@auth.get_password
+def get_pw(username):
+    if username in users:
+        return users.get(username)
+    return None
 
 @app.route('/')
 def main():
@@ -43,6 +50,7 @@ def getcomment(commentid):
 
 
 @app.route('/save', methods=["POST"])
+@auth.login_required
 def save():
     mariadb_connection = get_db_connection()
     cursor = mariadb_connection.cursor(buffered=True)
