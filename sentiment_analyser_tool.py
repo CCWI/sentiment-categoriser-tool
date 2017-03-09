@@ -1,9 +1,9 @@
 import os
-import random
 import re
 from flask import Flask, render_template, redirect, url_for, request
 from flask_httpauth import HTTPBasicAuth
 import mysql.connector as mariadb
+from random import randint
 
 from config import db_host, db_user, db_password, db_name, users
 
@@ -20,15 +20,16 @@ def get_pw(username):
 def main():
     try:
         mariadb_connection = get_db_connection()
-        cursor = mariadb_connection.cursor(buffered=True)
-        cursor.execute('SELECT id FROM comments_07_03 WHERE sentiment IS NULL ORDER BY RAND() LIMIT 1')
-        rows = cursor.fetchall()
-        if cursor.rowcount == 0:
+        cursor = mariadb_connection.cursor(buffered=False)
+        cursor.execute('SELECT count(id) FROM comments_07_03 WHERE sentiment IS NULL')
+        row_count = cursor.fetchone()[0]
+        if row_count == 0:
             return render_template('alldone.html')
         else:
-            # commentid = random.choice(rows)[0]
-            commentid = rows[0][0]
-            return redirect(url_for('getcomment', commentid=commentid))
+            offset = randint(0, row_count)
+            cursor.execute('SELECT id FROM comments_07_03 WHERE sentiment IS NULL LIMIT 1 OFFSET ' + str(offset))
+            comment_id = cursor.fetchone()[0]
+            return redirect(url_for('getcomment', commentid=comment_id))
     finally:
         mariadb_connection.close()
 
