@@ -4,6 +4,7 @@ import re
 from flask import Flask, render_template, redirect, url_for, request
 from flask_httpauth import HTTPBasicAuth
 import mysql.connector as mariadb
+from random import randint
 
 from config import db_host, db_user, db_password, db_name, users
 
@@ -21,11 +22,20 @@ def main():
     try:
         mariadb_connection = get_db_connection()
         cursor = mariadb_connection.cursor(buffered=True)
-        cursor.execute('SELECT id FROM comments_07_03 WHERE sentiment IS NULL ORDER BY RAND() LIMIT 1')
-        rows = cursor.fetchall()
+        random = randint(1, 10)
+
+        if random == 1:
+            cursor.execute('SELECT c.id FROM comments_07_03 c JOIN sentiment s ON (c.id = s.comments_07_03_id) ' +
+                           'WHERE c.id NOT IN (SELECT comments_07_03_id FROM sentiment WHERE user = "'+ auth.username() + '") ' +
+                           'GROUP BY c.id ORDER BY count(c.id) ASC, rand() LIMIT 1')
+        if random != 1 or cursor.rowcount == 0:
+            cursor.execute('SELECT c.id FROM comments_07_03 c WHERE c.id NOT IN (SELECT comments_07_03_id FROM sentiment) ' +
+                           'ORDER BY rand() LIMIT 1')
+
         if cursor.rowcount == 0:
             return render_template('alldone.html')
         else:
+            rows = cursor.fetchall()
             # commentid = random.choice(rows)[0]
             commentid = rows[0][0]
             return redirect(url_for('getcomment', commentid=commentid))
@@ -58,11 +68,11 @@ def save():
     mariadb_connection = get_db_connection()
     cursor = mariadb_connection.cursor(buffered=True)
     if request.form['sentiment'] == 'spam':
-        stmt = "UPDATE comments_07_03 SET spam = %s WHERE id = %s"
-        cursor.execute(stmt, ("1", request.form['id']))
+        stmt = "REPLACE INTO sentiment(user, comments_07_03_id, sentiment, spam) VALUES(%s, %s, %s, %s)"
+        cursor.execute(stmt, (auth.username(), request.form['id'], None, "1"))
     else:
-        stmt = "UPDATE comments_07_03 SET sentiment = %s WHERE id = %s"
-        cursor.execute(stmt, (request.form['sentiment'], request.form['id']))
+        stmt = "REPLACE INTO sentiment(user, comments_07_03_id, sentiment, spam) VALUES(%s, %s, %s, %s)"
+        cursor.execute(stmt, (auth.username(), request.form['id'], request.form['sentiment'], None))
 
     mariadb_connection.commit()
     mariadb_connection.close()
