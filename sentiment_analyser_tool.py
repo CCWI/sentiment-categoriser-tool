@@ -25,9 +25,12 @@ def main():
         random = randint(1, 10)
 
         if random == 1:
-            cursor.execute('SELECT c.id FROM comments_07_03 c JOIN sentiment s ON (c.id = s.comments_07_03_id) ' +
-                           'WHERE c.id NOT IN (SELECT comments_07_03_id FROM sentiment WHERE user = "'+ auth.username() + '") ' +
-                           'GROUP BY c.id ORDER BY count(c.id) ASC, rand() LIMIT 1')
+            print('alt')
+            cursor.execute('SELECT comments_07_03_id ' +
+                           'FROM sentiment ' +
+                           'WHERE comments_07_03_id NOT IN ' +
+                           '(SELECT comments_07_03_id FROM sentiment WHERE user = "' + auth.username() + '") ' +
+                           'GROUP BY comments_07_03_id ORDER BY count(comments_07_03_id) ASC, rand() LIMIT 1')
         if random != 1 or cursor.rowcount == 0:
             cursor.execute('SELECT c.id FROM comments_07_03 c WHERE c.id NOT IN (SELECT comments_07_03_id FROM sentiment) ' +
                            'ORDER BY rand() LIMIT 1')
