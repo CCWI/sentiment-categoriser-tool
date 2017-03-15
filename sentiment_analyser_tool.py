@@ -25,7 +25,6 @@ def main():
         random = randint(1, 10)
 
         if random == 1:
-            print('alt')
             cursor.execute('SELECT comments_07_03_id ' +
                            'FROM sentiment ' +
                            'WHERE comments_07_03_id NOT IN ' +
